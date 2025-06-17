@@ -1,0 +1,65 @@
+Disk Usage CLI Tool – To-Do List
+✅ Planning & Concept
+
+Define core functionality: display folder/file sizes visually like FileLight with a ranger-style interface
+
+Decide on terminal-based interface: aiming for dual-pane view (left: tree, right: contents)
+
+Confirm language: Python
+
+    Commit to personal learning experience (no full code requested)
+
+📦 Tech Stack Decisions
+
+Choose TUI library:
+
+       Decided on Urwid
+
+
+🗂 File Indexing Logic
+
+Decide on indexing strategy:
+
+       Chose folder-by-folder indexing to save RAM and CPU
+
+       Implement folder-by-folder indexing logic
+
+📊 Visual Design & Display
+
+Design text-based usage bar (ASCII blocks or shaded blocks)
+
+Optionally, design a grid that fills based on used disk space
+
+    Add percentage and size data next to each item
+
+⚙️ Program Functionality
+
+Allow directory navigation using arrow keys or keybinds
+
+Use os and shutil for:
+
+Folder traversal
+
+File size gathering
+
+    Disk space (via shutil.disk_usage("/"))
+
+Structure code with OOP:
+
+    Create File/Folder classes to hold metadata
+
+Display only contents of currently navigated directory
+
+Accept folder path via CLI argument (via argparse)
+
+Default to root (/) if no argument is provided
+
+        Use os.chdir() to change the working directory
+
+🧹 File Management Features
+
+Implement delete functionality:
+
+    Prompt for confirmation before deleting any file/folder
+
+Handle exceptions for permission or failed deletes
