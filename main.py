@@ -52,9 +52,9 @@ def main():
 
     for i in items:
         i.check_if_file()
-#       if i.size > 1024:
-#           i.size = i.size / 1024
-        print(f"{i.name}, {i.type},{i.size / 1024} megabytes")
+        if i.size > 1024:
+            i.size = i.size / (1024 ** 2)
+        print(f"{i.name}, {i.type},{round(i.size,2)} megabytes")
     
 
 

@@ -63,3 +63,7 @@ Implement delete functionality:
     Prompt for confirmation before deleting any file/folder
 
 Handle exceptions for permission or failed deletes
+
+
+
+quick notes: add function to convery item.size to float type, add file check function to class init, write function to check if file size > 1024^2 or 1024^3 bytes to denote kb,mb,gb
