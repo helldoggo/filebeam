@@ -38,18 +38,37 @@ def main():
                             continue
                 self.size = total_size
 
-    #Urwid nav functions
+    #Object Initialization
+
+    def create_array_from_path(path):
+
+        def return_dir(path):
+            files = []
+            for i in os.scandir(path):
+                Item(i)
+                files.append(i)
+            return files
+        
+        def urwid_init(array):
+            items = []
+            for item in array:
+                name = urwid.Text(item.name)
+                widget = urwid.AttrMap(name, None, focus_map='reversed')
+                items.append(widget)
+            return items
+
+        return urwid_init(return_dir(path))
+
+
+
+    
+        
+                
+#    Urwid nav functions
     test_array = ["1","2","3"]
 
-    def urwid_init(array):
-        items = []
-        for item in array:
-            name = urwid.Text(item)
-            widget = urwid.AttrMap(name, None, focus_map='reversed')
-            items.append(widget)
-        return items
 
-    walker = urwid.SimpleFocusListWalker(urwid_init(test_array))
+    walker = urwid.SimpleFocusListWalker(create_array_from_path(cwd))
     body = urwid.ListBox(walker)
 
     
