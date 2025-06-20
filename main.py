@@ -64,9 +64,7 @@ def main():
     
         
                 
-#    Urwid nav functions
-    test_array = ["1","2","3"]
-
+    #Urwid nav functions
 
     walker = urwid.SimpleFocusListWalker(create_array_from_path(cwd))
     body = urwid.ListBox(walker)
