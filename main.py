@@ -5,6 +5,14 @@ import shutil
 import argparse
 
 def main():
+   #Argument parser for starting point
+    starting_parser = argparse.ArgumentParser(description="Starting point for disk analysis")
+    starting_parser.add_argument("path", nargs="?", default="/", help="Starting folder")
+    args = starting_parser.parse_args()
+    print(f"Starting at: {args.path}")
+    cwd = args.path
+
+
     #Class for list items
     class Item:
         def __init__(self, path):
@@ -13,6 +21,7 @@ def main():
             self.is_dir = os.path.isdir(path)
             self.type = "Directory" if self.is_dir else "File"
             self.size = os.path.getsize(path) if not self.is_dir else 0
+            self.size = int(self.size)
 
             
         def check_if_file(self):
@@ -28,38 +37,38 @@ def main():
                         except:
                             continue
                 self.size = total_size
-                
 
-                
-   #Argument parser for starting point
-    starting_parser = argparse.ArgumentParser(description="Starting point for disk analysis")
-    starting_parser.add_argument("path", nargs="?", default="/", help="Starting folder")
-    args = starting_parser.parse_args()
-    print(f"Starting at: {args.path}")
+    #Urwid nav functions
+    test_array = ["1","2","3"]
 
-    cwd = args.path
-   
-    entries = os.listdir(cwd)
+    def urwid_init(array):
+        items = []
+        for item in array:
+            name = urwid.Text(item)
+            widget = urwid.AttrMap(name, None, focus_map='reversed')
+            items.append(widget)
+        return items
+
+    walker = urwid.SimpleFocusListWalker(urwid_init(test_array))
+    body = urwid.ListBox(walker)
+
     
-    items = []
+    def handle_input(key):
+        if key in ('q', 'Q'):
+            raise urwid.ExitMainLoop()
 
-    #Object initialization
-    for entry in entries:
-        full_path = os.path.join(cwd, entry)
-        if os.path.exists(full_path):
-            item = Item(full_path)
-            items.append(item)
+        focus_position = walker.focus
 
-    for i in items:
-        i.check_if_file()
-        if i.size > 1024:
-            i.size = i.size / (1024 ** 2)
-        print(f"{i.name}, {i.type},{round(i.size,2)} megabytes")
-    
+        if key in ('down', 'j'):
+            if focus_position < len(walker) - 1:
+                walker.set_focus(focus_position + 1)
+
+        elif key in ('up', 'k'):
+            if focus_position > 0:
+                walker.set_focus(focus_position - 1)
 
 
-
+    loop = urwid.MainLoop(body, palette=[('reversed', 'standout', '')], unhandled_input=handle_input)
+    loop.run()
     
 main()
-
-    
