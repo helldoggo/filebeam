@@ -66,26 +66,29 @@ def main():
                 
     #Urwid nav functions
 
-    walker = urwid.SimpleFocusListWalker(create_array_from_path(cwd))
-    body = urwid.ListBox(walker)
-
+    title = urwid.Text("FileBeam")
+    walker1 = urwid.SimpleFocusListWalker(create_array_from_path(cwd))
+    body1 = urwid.ListBox(walker1)
+    columns = urwid.Columns([body1],dividechars=1)
+    rows = urwid.Pile([('pack',title),columns])
+    
     
     def handle_input(key):
         if key in ('q', 'Q'):
             raise urwid.ExitMainLoop()
 
-        focus_position = walker.focus
+        focus_position = walker1.focus
 
-        if key in ('down', 'j'):
-            if focus_position < len(walker) - 1:
-                walker.set_focus(focus_position + 1)
+        if key in ('down', 'ctrl n', 'j'):
+            if focus_position < len(walker1) - 1:
+                walker1.set_focus(focus_position + 1)
 
-        elif key in ('up', 'k'):
+        elif key in ('up', 'ctrl p', 'k'):
             if focus_position > 0:
-                walker.set_focus(focus_position - 1)
+                walker1.set_focus(focus_position - 1)
 
 
-    loop = urwid.MainLoop(body, palette=[('reversed', 'standout', '')], unhandled_input=handle_input)
+    loop = urwid.MainLoop(rows, palette=[('reversed', 'standout', '')], unhandled_input=handle_input)
     loop.run()
     
 main()
