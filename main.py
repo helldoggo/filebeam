@@ -20,9 +20,12 @@ def main():
             self.name = os.path.basename(path)
             self.is_dir = os.path.isdir(path)
             self.type = "Directory" if self.is_dir else "File"
-            self.size = os.path.getsize(path) if not self.is_dir else 0
-            self.size = int(self.size)
+            try:
+                self.size = os.path.getsize(path) if not self.is_dir else 0
+                self.size = int(self.size)
 
+            except:
+                self.size = 0
             
         def check_if_file(self):
             if self.type == "File":
@@ -45,8 +48,8 @@ def main():
         def return_dir(path):
             files = []
             for i in os.scandir(path):
-                Item(i)
-                files.append(i)
+                item = Item(i.path)
+                files.append(item)
             return files
         
         def urwid_init(array):
@@ -60,10 +63,6 @@ def main():
         return urwid_init(return_dir(path))
 
 
-
-    
-        
-                
     #Urwid nav functions
 
     title = urwid.Text("FileBeam")
