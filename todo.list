@@ -1,3 +1,0 @@
-Done: Created object class, created file check, set up object initialization, combined initialization with UI widget preperation, added user input functions to walk through list of objects
-
-Todo: fix filehandling of symlinkss, add second pane in UI to display file contents/size, create functions to move in and out of folders, add user input functions to delete files, add disk scans for usage calculations, design visual aid for disk usage, write configuration file, compile and create installation script, add to AUR
