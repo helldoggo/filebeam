@@ -1,0 +1,69 @@
+
+This file lists modules PyInstaller was not able to find. This does not
+necessarily mean this module is required for running your program. Python and
+Python 3rd-party packages include a lot of conditional or optional modules. For
+example the module 'ntpath' only exists on Windows, whereas the module
+'posixpath' only exists on Posix systems.
+
+Types if import:
+* top-level: imported at the top-level - look at these first
+* conditional: imported within an if-statement
+* delayed: imported within a function
+* optional: imported within a try-except-statement
+
+IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
+            tracking down the missing module yourself. Thanks!
+
+missing module named 'collections.abc' - imported by traceback (top-level), typing (top-level), inspect (top-level), logging (top-level), importlib.resources.readers (top-level), selectors (top-level), tracemalloc (top-level), typing_extensions (top-level), asyncio.base_events (top-level), http.client (top-level), asyncio.coroutines (top-level), urwid.util (conditional), urwid.signals (conditional), urwid.display.escape (top-level), urwid.display.common (conditional), urwid.display._raw_display_base (conditional), urwid.display._win32_raw_display (conditional), urwid.event_loop.abstract_loop (conditional), urwid.event_loop.asyncio_loop (conditional), urwid.command_map (top-level), urwid.widget.attr_map (top-level), urwid.widget.widget (conditional), urwid.widget.attr_wrap (conditional), urwid.widget.text (conditional), urwid.widget.big_text (conditional), urwid.widget.container (conditional), urwid.widget.monitored_list (conditional), urwid.widget.columns (conditional), urwid.widget.edit (conditional), urwid.widget.frame (top-level), urwid.widget.padding (conditional), urwid.widget.pile (conditional), urwid.widget.grid_flow (conditional), urwid.widget.listbox (top-level), urwid.widget.wimp (conditional), urwid.widget.treetools (conditional), urwid.widget.overlay (top-level), urwid.widget.progress_bar (conditional), urwid.widget.scrollable (conditional), urwid.event_loop.select_loop (conditional), urwid.event_loop.main_loop (conditional), setuptools (top-level), setuptools._distutils.filelist (top-level), setuptools._distutils.util (top-level), jaraco.functools (top-level), more_itertools.more (top-level), more_itertools.recipes (top-level), setuptools._distutils._modified (top-level), setuptools._distutils.compat (top-level), setuptools._distutils.spawn (top-level), setuptools._distutils.compilers.C.base (top-level), setuptools._distutils.fancy_getopt (top-level), setuptools._reqs (top-level), setuptools.discovery (top-level), setuptools.dist (top-level), setuptools._distutils.command.bdist (top-level), setuptools._distutils.core (top-level), setuptools._distutils.cmd (top-level), setuptools._distutils.dist (top-level), configparser (top-level), setuptools._distutils.extension (top-level), setuptools.config.setupcfg (top-level), setuptools.config.expand (top-level), setuptools.config.pyprojecttoml (top-level), setuptools.config._apply_pyprojecttoml (top-level), tomllib._parser (top-level), setuptools.command.egg_info (top-level), setuptools._distutils.command.build (top-level), setuptools._distutils.command.sdist (top-level), setuptools.glob (top-level), setuptools.command._requirestxt (top-level), setuptools.command.bdist_wheel (top-level), wheel.cli.convert (top-level), wheel.cli.tags (top-level), twisted.python.compat (top-level), attr._compat (top-level), attr._make (top-level), urwid.event_loop.twisted_loop (conditional), tornado.gen (top-level), urwid.event_loop.tornado_loop (conditional), urwid.event_loop.glib_loop (conditional), urwid.event_loop.trio_loop (conditional), urwid.event_loop.zmq_loop (conditional), urwid.display._posix_raw_display (conditional), urwid.canvas (conditional), urwid.font (conditional), urwid.vterm (conditional), yaml.constructor (top-level), setuptools._distutils.command.build_ext (top-level), _pyrepl.types (top-level), _pyrepl.readline (top-level), setuptools._distutils.compilers.C.msvc (top-level)
+missing module named winreg - imported by importlib._bootstrap_external (conditional), platform (delayed, optional), mimetypes (optional), urllib.request (delayed, conditional, optional), setuptools._distutils.compilers.C.msvc (top-level), setuptools.msvc (conditional)
+missing module named nt - imported by shutil (conditional), importlib._bootstrap_external (conditional), ntpath (optional), _colorize (delayed, conditional, optional), os (delayed, conditional, optional), ctypes (delayed, conditional), _pyrepl.windows_console (delayed, optional)
+missing module named _frozen_importlib_external - imported by importlib._bootstrap (delayed), importlib (optional), importlib.abc (optional), zipimport (top-level)
+excluded module named _frozen_importlib - imported by importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named _winapi - imported by encodings (delayed, conditional, optional), shutil (conditional), ntpath (optional), subprocess (conditional), multiprocessing.connection (optional), multiprocessing.spawn (delayed, conditional), multiprocessing.reduction (conditional), multiprocessing.shared_memory (conditional), multiprocessing.heap (conditional), multiprocessing.popen_spawn_win32 (top-level), asyncio.windows_events (top-level), asyncio.windows_utils (top-level), sysconfig (delayed), mimetypes (optional)
+missing module named msvcrt - imported by subprocess (optional), multiprocessing.spawn (delayed, conditional), multiprocessing.popen_spawn_win32 (top-level), asyncio.windows_events (top-level), asyncio.windows_utils (top-level), getpass (optional), _pyrepl.windows_console (top-level)
+missing module named _overlapped - imported by asyncio.windows_events (top-level)
+missing module named multiprocessing.set_start_method - imported by multiprocessing (top-level), multiprocessing.spawn (top-level)
+missing module named multiprocessing.get_start_method - imported by multiprocessing (top-level), multiprocessing.spawn (top-level)
+missing module named multiprocessing.get_context - imported by multiprocessing (top-level), multiprocessing.pool (top-level), multiprocessing.managers (top-level), multiprocessing.sharedctypes (top-level)
+missing module named multiprocessing.TimeoutError - imported by multiprocessing (top-level), multiprocessing.pool (top-level)
+missing module named _scproxy - imported by urllib.request (conditional)
+missing module named multiprocessing.BufferTooShort - imported by multiprocessing (top-level), multiprocessing.connection (top-level)
+missing module named multiprocessing.AuthenticationError - imported by multiprocessing (top-level), multiprocessing.connection (top-level)
+missing module named asyncio.DefaultEventLoopPolicy - imported by asyncio (delayed, conditional), asyncio.events (delayed, conditional)
+missing module named annotationlib - imported by typing_extensions (conditional), attr._compat (conditional)
+missing module named vms_lib - imported by platform (delayed, optional)
+missing module named 'java.lang' - imported by platform (delayed, optional)
+missing module named java - imported by platform (delayed)
+missing module named _wmi - imported by platform (optional)
+missing module named _typeshed - imported by setuptools._distutils.dist (conditional), setuptools.glob (conditional), setuptools.compat.py311 (conditional)
+missing module named _manylinux - imported by packaging._manylinux (delayed, optional)
+missing module named usercustomize - imported by site (delayed, optional)
+missing module named sitecustomize - imported by site (delayed, optional)
+missing module named importlib_metadata - imported by setuptools._importlib (conditional)
+missing module named backports - imported by wcwidth.wcwidth (optional), jaraco.context (conditional)
+missing module named importlib_resources - imported by jaraco.text (optional)
+missing module named trove_classifiers - imported by setuptools.config._validate_pyproject.formats (optional)
+missing module named 'setuptools._vendor' - imported by setuptools.config._validate_pyproject.formats (optional)
+missing module named tomli - imported by setuptools.compat.py310 (conditional)
+missing module named pyimod02_importers - imported by /usr/lib/python3.13/site-packages/PyInstaller/hooks/rthooks/pyi_rth_pkgutil.py (delayed)
+missing module named zmq - imported by urwid.event_loop.zmq_loop (top-level)
+missing module named exceptiongroup - imported by urwid.event_loop.trio_loop (conditional)
+missing module named trio - imported by urwid.event_loop.trio_loop (top-level)
+runtime module named gi.repository.GLib - imported by urwid.event_loop.glib_loop (top-level), gi.repository (top-level), gi._ossighelper (delayed), gi.events (top-level)
+missing module named colorama - imported by tornado.log (optional)
+missing module named win32evtlog - imported by logging.handlers (delayed, optional)
+missing module named win32evtlogutil - imported by logging.handlers (delayed, optional)
+missing module named win32api - imported by twisted.python.win32 (delayed, optional), twisted.python.lockfile (conditional, optional), twisted.internet._dumbwin32proc (top-level), twisted.internet._pollingfile (top-level)
+missing module named pywintypes - imported by twisted.python.lockfile (conditional, optional), twisted.internet._dumbwin32proc (top-level), twisted.internet._pollingfile (top-level)
+missing module named win32event - imported by twisted.internet._dumbwin32proc (top-level), twisted.internet.win32eventreactor (top-level)
+missing module named win32gui - imported by twisted.internet.win32eventreactor (top-level)
+missing module named win32file - imported by twisted.internet._dumbwin32proc (top-level), twisted.internet._pollingfile (top-level), twisted.internet.win32eventreactor (top-level)
+missing module named 'service_identity.pyopenssl' - imported by twisted.internet._sslverify (delayed, optional)
+missing module named service_identity - imported by twisted.internet._sslverify (delayed, optional)
+missing module named 'OpenSSL._util' - imported by twisted.internet._sslverify (top-level)
+missing module named 'OpenSSL.SSL' - imported by twisted.protocols.tls (top-level)
+missing module named OpenSSL - imported by twisted.internet.interfaces (conditional, optional), twisted.internet._sslverify (top-level), twisted.internet.ssl (top-level)
+missing module named win32security - imported by twisted.internet._dumbwin32proc (top-level)
+missing module named win32pipe - imported by twisted.internet._dumbwin32proc (top-level), twisted.internet._pollingfile (top-level)
+missing module named win32con - imported by twisted.internet._dumbwin32proc (top-level)
+missing module named win32process - imported by twisted.internet.posixbase (conditional, optional), twisted.internet._dumbwin32proc (top-level)

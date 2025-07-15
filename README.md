@@ -1,48 +1,68 @@
-📁 FileBeam
+FileBeam
 
-FileBeam — an interactive terminal file browser.
-Browse, inspect, and manage your files with ease.
-
-
----
-
-✨ Features
-
-✅ Interactive file & folder browser
-✅ Displays file size, disk usage, and a 20×20 visual grid
-✅ Configurable keybindings and default open command
-✅ Supports navigation, deletion (with & without confirmation), and opening files
-✅ Threaded folder size calculation
-✅ Supports hidden files (-H)
-✅ Clean, responsive TUI powered by urwid
+FileBeam is an interactive terminal file browser for Linux.
+Navigate, inspect, and manage files and directories from a curses-based UI.
 
 
 ---
 
-🚀 Installation
+Features
 
-Requires Python 3 and the urwid, pyyaml libraries:
+TUI file browser using urwid
 
-pip install urwid pyyaml
+Displays file size, disk usage, and a 20×20 usage grid
 
-Download filebeam.py and make it executable:
+Configurable keybindings and default open command
+
+Supports navigation, deletion (with and without confirmation), moving, copying, renaming
+
+Multi-select support
+
+Supports hidden files (-H)
+
+Threaded folder size calculation
+
+Works as a standalone binary (when built with PyInstaller)
+
+
+
+---
+
+Installation
+
+You can either use the precompiled binary located in the dist/ directory or run the Python script directly.
+
+Option 1: Precompiled binary
+
+A statically-built binary is provided in dist/filebeam.
+You can copy it to /usr/bin/ or anywhere in your PATH:
+
+sudo cp dist/filebeam /usr/bin/
+filebeam
+
+Option 2: Run as a Python script
+
+Ensure filebeam.py (or main.py) has the shebang:
+
+#!/usr/bin/env python3
+
+and is executable:
 
 chmod +x filebeam.py
+./filebeam.py
 
-Or just run it:
-
-python3 filebeam.py
+Both methods provide identical functionality.
 
 
 ---
 
-📄 Usage
+Usage
 
-python3 filebeam.py [options] [path]
+filebeam [options] [path]
 
-Options:
+Options
 
-Flag	Description
+Option	Description
 
 -H, --hidden	Show hidden dotfiles
 path	Starting folder (default: /)
@@ -51,101 +71,98 @@ path	Starting folder (default: /)
 
 ---
 
-🎹 Keybindings
+Default Keybindings
 
-📁 Navigation
+Navigation
 
-Key(s) (default)	Action
+Keys	Action
 
-↑ / k / Ctrl+P	Move up
-↓ / j / Ctrl+N	Move down
-Enter / l / Ctrl+F	Enter directory
-← / h / Backspace	Go to parent directory
+↑ / k / ctrl p	Move up
+↓ / j / ctrl n	Move down
+enter / l / ctrl f	Enter directory
+← / h / backspace	Go to parent directory
 q	Quit
+space	Toggle selection
+
+
+Deletion
+
+Keys	Action
+
+ctrl d	Delete selected (confirmation)
+meta d	Delete selected (no confirmation)
+
+
+Opening
+
+Keys	Action
+
+ctrl o	Prompt for program and arguments to open file(s)
+
+
+Move / Copy / Rename
+
+Keys	Action
+
+ctrl x / meta m / ctrl w	Move
+meta c / alt c / alt w	Copy
+f2 / alt r / ctrl y / alt y	Rename
 
 
 
 ---
 
-🗑️ Deletion
+Configuration
 
-Key(s) (default)	Action
+On first run, a configuration file is created at ~/.filebeam/config.yaml.
+You can edit it to change keybindings or default open command.
 
-Ctrl+D	Delete file/folder (confirm)
-Alt+D	Delete file/folder (no prompt)
-
-
-
----
-
-🚀 Open file with program
-
-Key(s) (default)	Action
-
-Ctrl+O	Prompt for program & arguments to open file
-
-
-When prompted, enter the program and optional arguments to open the selected file.
-If you include {} in your command, it will be replaced with the file path.
-If you don’t, the file path is appended at the end.
-
-Examples:
-
-Input in prompt	What runs
-
-nvim	nvim "path/to/file"
-nvim {}	nvim "path/to/file"
-less {}	less "path/to/file"
-
-
-
----
-
-🔧 Configuration
-
-On first run, FileBeam creates a config file at:
-
-~/.filebeam/config.yaml
-
-You can edit this file to change keybindings or the default open command.
-
-Default config.yaml:
+Default configuration:
 
 keybindings:
-  move_up: [up, k, ctrl p]
-  move_down: [down, j, ctrl n]
-  enter_dir: [enter, l, ctrl f]
-  parent_dir: [left, h, backspace]
-  quit: [q]
-  delete_confirm: [ctrl d]
-  delete_immediate: [alt d]
-  open_prompt: [ctrl o]
-
+  move_up:        ['up', 'k', 'ctrl p']
+  move_down:      ['down', 'j', 'ctrl n']
+  enter_dir:      ['enter', 'l', 'ctrl f']
+  parent_dir:     ['left', 'h', 'backspace']
+  quit:           ['q']
+  delete_confirm: ['ctrl d']
+  delete_immediate: ['meta d']
+  open_prompt:    ['ctrl o']
+  move:           ['ctrl x', 'meta m', 'ctrl w']
+  copy:           ['meta c', 'alt c', 'alt w']
+  rename:         ['f2', 'alt r', 'ctrl y', 'alt y']
+  toggle_select:  ['space']
 defaults:
-  open_command: nvim {}
-
-You can replace or add key combinations to any action.
-For example:
-
-delete_immediate: [alt d, ctrl shift x]
+  open_command:   'nvim {}'
 
 
 ---
 
-📊 Visuals
+Notes
 
-📄 Info panel shows:
+rename applies only to the focused item, even if multiple are selected.
 
-Name, Path, Type
+delete, move, and copy act on all selected items if any, or just the focused item otherwise.
 
-Disk, Disk Size, File Size
-
-Usage % and a 20×20 grid
+Multi-select is toggled with space and indicated in the file list with [*].
 
 
 
 ---
 
-📦 License
+Requirements
 
-GNU — use it, share it, improve it!
+If running as a Python script, you need the following dependencies installed:
+
+PyYAML==6.0.2
+urwid==3.0.2
+
+You can install them with:
+
+pip install -r requirements.txt
+
+requirements.txt
+
+PyYAML==6.0.2
+urwid==3.0.2
+

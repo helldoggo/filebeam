@@ -3,31 +3,36 @@ import urwid
 import argparse
 import threading
 import shutil
-import subprocess
 import yaml
+import signal
+from datetime import datetime
 
 def main():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     parser = argparse.ArgumentParser(
-        description="""
-FileBeam — interactive terminal file browser.
-Browse, inspect, and manage your files with ease.
-""",
+        description="FileBeam — interactive terminal file browser.",
         epilog="""
 KEYBINDINGS:
   MOVEMENT:
-    ↑ / k / Ctrl+P      - Move up
-    ↓ / j / Ctrl+N      - Move down
-    Enter / l / Ctrl+F  - Enter directory
-    ← / h / Backspace   - Go to parent directory
+    ↑ / k / ctrl p      - Move up
+    ↓ / j / ctrl n      - Move down
+    enter / l / ctrl f  - Enter directory
+    ← / h / backspace   - Go to parent directory
     q                   - Quit
+    space               - Toggle selection
 
   DELETION:
-    Ctrl+D              - Delete selected file/folder (confirmation)
-    Alt+D               - Delete selected file/folder (no confirmation)
+    ctrl d              - Delete selected file/folder(s) (confirmation)
+    meta d              - Delete selected file/folder(s) (no confirmation)
 
   OPENING:
-    Ctrl+O              - Prompt for program & arguments to open file with
-                          Example: nvim {} or less {}
+    ctrl o              - Prompt for program & arguments to open file(s)
+
+  MOVE / COPY / RENAME:
+    ctrl x / meta m / ctrl w      - Move
+    meta c / alt c / alt w        - Copy
+    f2 / alt r / ctrl y / alt y   - Rename
 
 FLAGS:
   -H / --hidden         - Show hidden dotfiles
@@ -40,7 +45,6 @@ FLAGS:
     cwd = os.path.abspath(args.path)
     show_hidden = args.hidden
 
-    # Load or create config
     config_path = os.path.expanduser("~/.filebeam/config.yaml")
     default_config = {
         'keybindings': {
@@ -50,8 +54,12 @@ FLAGS:
             'parent_dir': ['left', 'h', 'backspace'],
             'quit': ['q'],
             'delete_confirm': ['ctrl d'],
-            'delete_immediate': ['alt d'],
-            'open_prompt': ['ctrl o']
+            'delete_immediate': ['meta d'],
+            'open_prompt': ['ctrl o'],
+            'move': ['ctrl x', 'meta m', 'ctrl w'],
+            'copy': ['meta c', 'alt c', 'alt w'],
+            'rename': ['f2', 'alt r', 'ctrl y', 'alt y'],
+            'toggle_select': ['space']
         },
         'defaults': {
             'open_command': 'nvim {}'
@@ -70,6 +78,8 @@ FLAGS:
     defaults = config.get('defaults', default_config['defaults'])
 
     disks = {}
+    selected_paths = set()
+
 
     def format_size(size):
         if size < 1024:
@@ -110,11 +120,7 @@ FLAGS:
     class Item:
         def __init__(self, path):
             self.path = path
-            if os.path.islink(self.path):
-                real = os.path.realpath(self.path)
-                if not os.path.exists(real):
-                    raise FileNotFoundError(f"Broken symlink: {self.path}")
-                self.path = real
+            self.realpath = os.path.realpath(path) if os.path.islink(path) else path
             self.name = os.path.basename(self.path)
             self.is_dir = os.path.isdir(self.path)
             self.type = "Directory" if self.is_dir else "File"
@@ -141,7 +147,6 @@ FLAGS:
                 self.size_known = True
                 callback(self)
             threading.Thread(target=worker, daemon=True).start()
-
     walker1 = None
     items_with_widgets = None
     info_text = urwid.Text("")
@@ -163,7 +168,8 @@ FLAGS:
                 item = Item(entry.path)
             except FileNotFoundError:
                 continue
-            data.append((item, urwid.AttrMap(urwid.Text(item.name), None, focus_map='reversed')))
+            prefix = "[*] " if item.path in selected_paths else "[ ] "
+            data.append((item, urwid.AttrMap(urwid.Text(prefix + item.name), None, focus_map='reversed')))
         data_except_up = data[1:] if data and data[0][0].name == ".." else data
         data_except_up.sort(key=lambda x: x[0].name.lower())
         if data and data[0][0].name == "..":
@@ -182,22 +188,34 @@ FLAGS:
         if 0 <= focus_position < len(items_with_widgets):
             item = items_with_widgets[focus_position][0]
 
+            def fmt_time(ts):
+                return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+
             def display():
                 disk_size = disks.get(item.disk, 1)
                 usage_ratio = item.size / disk_size if disk_size else 0
                 percent = usage_ratio * 100
                 grid = build_usage_grid(usage_ratio)
                 disk_size_str = format_size(disk_size)
-                info_text.set_text(
+                mtime = fmt_time(os.path.getmtime(item.path))
+                ctime = fmt_time(os.path.getctime(item.path))
+
+                text = (
                     f"Name: {item.name}\n"
                     f"Path: {item.path}\n"
                     f"Type: {item.type}\n"
                     f"Disk: {item.disk}\n"
                     f"Disk Size: {disk_size_str}\n"
                     f"Size: {format_size(item.size)}\n"
-                    f"Usage: {percent:.2f}%\n\n"
-                    f"{grid}"
+                    f"Modified: {mtime}\n"
+                    f"Metadata Changed: {ctime}\n"
                 )
+                if item.path != item.realpath:
+                    text += f"Symlink → {item.realpath}\n"
+                grid_centered = '\n'.join(line.center(40) for line in grid.splitlines())
+                text += f"Usage: {percent:.2f}%\n\n{grid_centered}"
+
+                info_text.set_text(text)
 
             if item.is_dir and not item.size_known:
                 info_text.set_text(
@@ -212,46 +230,143 @@ FLAGS:
                 display()
 
     def delete_item(item):
+        targets = list(selected_paths) or [item.path]
         try:
-            if item.is_dir:
-                shutil.rmtree(item.path)
-            else:
-                os.remove(item.path)
+            for path in targets:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
+            selected_paths.clear()
+            update_ui(cwd)
         except Exception as e:
-            info_text.set_text(f"Failed to delete {item.name}: {e}")
-            return
-        update_ui(cwd)
+            info_text.set_text(f"Failed to delete: {e}")
 
     def confirm_delete_popup(item):
-        disk_size = disks.get(item.disk, 1)
-        usage_ratio = item.size / disk_size if disk_size else 0
-        percent = usage_ratio * 100
-
-        body = urwid.Text((
-            f"Delete the following?\n\n"
-            f"Name: {item.name}\n"
-            f"Size: {format_size(item.size)}\n"
-            f"Disk Usage: {percent:.2f}%\n\n"
-            f"Press 'y' to confirm, 'n' to cancel."
-        ))
+        targets = list(selected_paths) or [item.path]
+        body = urwid.Text(
+            f"Delete the following {len(targets)} item(s)?\n\n"
+            + "\n".join(targets[:10]) + ("\n..." if len(targets) > 10 else "") +
+            "\n\nPress 'y' to confirm, 'n' to cancel."
+        )
         fill = urwid.Filler(body, valign='middle')
         box = urwid.LineBox(fill)
         overlay = urwid.Overlay(box, loop.widget,
-                                align='center', width=('relative', 50),
-                                valign='middle', height=('relative', 30))
+                                align='center', width=('relative', 60),
+                                valign='middle', height=('relative', 50))
 
         def popup_input(key):
             if key in ('y', 'Y'):
                 delete_item(item)
                 loop.widget = rows
-                loop.unhandled_input = handle_input
+                loop.unhandled_input = handle_input_main
             elif key in ('n', 'N', 'esc'):
                 loop.widget = rows
-                loop.unhandled_input = handle_input
+                loop.unhandled_input = handle_input_main
 
         loop.widget = overlay
         loop.draw_screen()
         loop.unhandled_input = popup_input
+
+    def _prompt_with_action(edit, action, verb):
+        fill = urwid.Filler(edit, valign='middle')
+        box = urwid.LineBox(fill)
+        overlay = urwid.Overlay(box, loop.widget,
+                                align='center', width=('relative', 50),
+                                valign='middle', height=('relative', 30))
+
+        def handle_input(key):
+            if key == 'enter':
+                dest = edit.edit_text.strip()
+                try:
+                    action(dest)
+                except Exception as e:
+                    info_text.set_text(f"Failed to {verb}: {e}")
+                loop.widget = rows
+                loop.unhandled_input = handle_input_main
+            elif key in ('esc',):
+                loop.widget = rows
+                loop.unhandled_input = handle_input_main
+
+        loop.widget = overlay
+        loop.draw_screen()
+        loop.unhandled_input = handle_input
+
+    def prompt_move(item):
+        edit = urwid.Edit("Move to:\n", edit_text=item.path)
+        def move_action(dest):
+            targets = list(selected_paths) or [item.path]
+            for path in targets:
+                shutil.move(path, dest)
+            selected_paths.clear()
+            update_ui(cwd)
+        _prompt_with_action(edit, move_action, "move")
+
+    def prompt_copy(item):
+        edit = urwid.Edit("Copy to:\n", edit_text=item.path)
+        def copy_action(dest):
+            targets = list(selected_paths) or [item.path]
+            for path in targets:
+                if os.path.isdir(path):
+                    shutil.copytree(path, dest)
+                else:
+                    shutil.copy2(path, dest)
+            selected_paths.clear()
+            update_ui(cwd)
+        _prompt_with_action(edit, copy_action, "copy")
+
+    def prompt_rename(item):
+        edit = urwid.Edit("Rename to:\n", edit_text=item.name)
+        def rename_action(new_name):
+            dest = os.path.join(os.path.dirname(item.path), new_name)
+            os.rename(item.path, dest)
+            update_ui(cwd)
+        _prompt_with_action(edit, rename_action, "rename")
+
+    def handle_input_main(key):
+        nonlocal loop
+        focus_position = walker1.focus
+        item = items_with_widgets[focus_position][0]
+
+        if key in keybindings['quit']:
+            raise urwid.ExitMainLoop()
+        elif key in keybindings['move_down']:
+            if focus_position < len(walker1) - 1:
+                walker1.set_focus(focus_position + 1)
+                update_info_box()
+        elif key in keybindings['move_up']:
+            if focus_position > 0:
+                walker1.set_focus(focus_position - 1)
+                update_info_box()
+        elif key in keybindings['enter_dir']:
+            if item.is_dir:
+                update_ui(item.path)
+        elif key in keybindings['parent_dir']:
+            if cwd != '/':
+                parent = os.path.dirname(cwd)
+                update_ui(parent)
+        elif key in keybindings['toggle_select']:
+            if item.path in selected_paths:
+                selected_paths.remove(item.path)
+            else:
+                selected_paths.add(item.path)
+            update_ui(cwd)
+        elif key in keybindings['delete_confirm']:
+            confirm_delete_popup(item)
+        elif key in keybindings['delete_immediate']:
+            delete_item(item)
+        elif key in keybindings['open_prompt']:
+            prompt_open_program(item)
+        elif key in keybindings['move']:
+            prompt_move(item)
+        elif key in keybindings['copy']:
+            prompt_copy(item)
+        elif key in keybindings['rename']:
+            prompt_rename(item)
+
+    def refresh(loop_, user_data):
+        update_info_box()
+        loop.set_alarm_in(0.5, refresh)
 
     def prompt_open_program(item):
         edit = urwid.Edit("Enter program and [optional] arguments to open with:\n")
@@ -266,65 +381,17 @@ FLAGS:
                 cmd_template = edit.edit_text.strip()
                 if cmd_template == '':
                     cmd_template = defaults.get('open_command', 'nvim {}')
-                if '{}' in cmd_template:
-                    cmd = cmd_template.replace("{}", f'"{item.path}"')
-                else:
-                    cmd = f'{cmd_template} "{item.path}"'
-                try:
+                targets = list(selected_paths) or [item.path]
+                for path in targets:
+                    cmd = cmd_template.replace("{}", f'"{path}"') if '{}' in cmd_template else f'{cmd_template} "{path}"'
                     os.execlp("/bin/sh", "sh", "-c", cmd)
-                except Exception as e:
-                    info_text.set_text(f"Failed to run: {e}")
-                    loop.widget = rows
-                    loop.unhandled_input = handle_input
             elif key in ('esc',):
                 loop.widget = rows
-                loop.unhandled_input = handle_input
+                loop.unhandled_input = handle_input_main
 
         loop.widget = overlay
         loop.draw_screen()
         loop.unhandled_input = handle_open_input
-
-    def handle_input(key):
-        nonlocal loop
-        if key in keybindings['quit']:
-            raise urwid.ExitMainLoop()
-        focus_position = walker1.focus
-
-        if key in keybindings['move_down']:
-            if focus_position < len(walker1) - 1:
-                walker1.set_focus(focus_position + 1)
-                update_info_box()
-
-        elif key in keybindings['move_up']:
-            if focus_position > 0:
-                walker1.set_focus(focus_position - 1)
-                update_info_box()
-
-        elif key in keybindings['enter_dir']:
-            item = items_with_widgets[walker1.focus][0]
-            if item.is_dir:
-                update_ui(item.path)
-
-        elif key in keybindings['parent_dir']:
-            if cwd != '/':
-                parent = os.path.dirname(cwd)
-                update_ui(parent)
-
-        elif key in keybindings['delete_confirm']:
-            item = items_with_widgets[walker1.focus][0]
-            confirm_delete_popup(item)
-
-        elif key in keybindings['delete_immediate']:
-            item = items_with_widgets[walker1.focus][0]
-            delete_item(item)
-
-        elif key in keybindings['open_prompt']:
-            item = items_with_widgets[walker1.focus][0]
-            prompt_open_program(item)
-
-    def refresh(loop_, user_data):
-        update_info_box()
-        loop.set_alarm_in(0.5, refresh)
 
     title = urwid.Text("FileBeam", align='center')
     title_row = ('pack', urwid.Filler(title, height='pack'))
@@ -347,10 +414,9 @@ FLAGS:
         ('weight', 1, columns)
     ])
 
-    loop = urwid.MainLoop(rows, palette=[('reversed', 'standout', '')], unhandled_input=handle_input)
+    loop = urwid.MainLoop(rows, palette=[('reversed', 'standout', '')], unhandled_input=handle_input_main)
     update_info_box()
     loop.set_alarm_in(0.5, refresh)
     loop.run()
-
 
 main()
